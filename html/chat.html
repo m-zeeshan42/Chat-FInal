@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #chat-container {
+            width: 80%;
+            max-width: 600px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+        }
+
+        .message-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .message-actions {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: none;
+        }
+
+        .message-container:hover .message-actions {
+            display: block;
+        }
+
+        .message-actions button {
+            margin-left: 5px;
+        }
+
+        #message {
+            width: 100%;
+            padding: 10px;
+
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .message-container {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 10px;
+        }
+
+        .metadata-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            margin-right: 20px;
+            /* Adjust margin as needed */
+        }
+
+        .message-content-container {
+            flex-grow: 1;
+        }
+
+        .message-timestamp {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .message-actions {
+            margin-left: 10px;
+            /* Adjust margin as needed */
+        }
+
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
+        }
+
+        .message-text {
+            color: #999;
+            /* Grey color */
+            font-style: italic;
+            /* Italic font style */
+
+        }
+
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* CSS for the search input and button */
+        #search-container {
+
+            display: flex;
+            justify-content: flex-end;
+            /* Align items to the right */
+            align-items: center;
+            /* Center vertically */
+        }
+
+        #searchInput {
+            width: 200px;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #4caf50;
+            /* Change border color when focused */
+        }
+
+        #searchButton {
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #searchButton:hover {
+            background-color: #45a049;
+        }
+
+        #input-container {
+            display: flex;
+            align-items: center;
+        }
+
+        #message {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        /* New styles for the connected users container */
+        .connected-users-container {
+            width: 20%;
+            max-width: 200px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            margin-right: 20px;
+            /* Adjust margin as needed */
+        }
+
+
+        #connected-users-container h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        #connected-users-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #connected-users-list li {
+            padding: 5px 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        #connected-users-list li:last-child {
+            border-bottom: none;
+        }
+
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #user-info {
+            margin-right: 20px;
+        }
+
+        #current-username {
+            cursor: pointer;
+        }
+
+        #search-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        #search-box {
+            display: flex;
+            align-items: center;
+        }
+
+        #current-username {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .icon {
+            margin-right: 5px;
+            font-size: 20px;
+        }
+
+        #current-username:hover {
+            color: #4caf50;
+        }
+
+        .participant-container {
+            margin-bottom: 8px;
+            /* Adjust margin as needed */
+        }
+
+        .participant-name {
+            margin-left: 8px;
+            /* Adjust margin as needed */
+            font-weight: normal;
+            /* Reset font weight */
+        }
+
+        .participant-name.bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div id="chat-container">
+        <div id="header">
+            <div id="user-info">
+                <div id="current-username" onclick="showParticipants()">
+                    <span class="icon">&#128100;</span> Show Participants
+                </div>
+            </div>
+
+            <div id="search-container">
+                <div id="search-box">
+                    <input type="text" id="searchInput" placeholder="Search messages...">
+                    <button onclick="searchMessages()">Search</button>
+                </div>
+            </div>
+        </div>
+        <h1>Group Chat</h1>
+        <div id="chat"></div>
+        <div id="input-container">
+            <input type="text" id="message" placeholder="Type your message..." onkeydown="handleKeyDown(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+
+
+    </div>
+
+    <!-- Modal -->
+    <div id="participantsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeParticipantsModal()">&times;</span>
+            <h2>Participants</h2>
+            <ul id="participantsList"></ul>
+        </div>
+    </div>
+
+    <!-- The search results modal -->
+    <div id="searchResultsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSearchResultsModal()">&times;</span>
+            <div id="searchResults"></div>
+        </div>
+    </div>
+
+
+    <!-- The modal -->
+    <div id="editModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <textarea id="editMessage" style="width: 100%; height: 100px;"></textarea><br>
+            <button onclick="updateMessage()">Update</button>
+            <button onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        var socket = new WebSocket("ws://localhost:8080");
+
+        socket.onopen = function (event) {
+            var username = getUrlParameter('username');
+            if (username.trim() !== "") {
+                var message = {
+                    action: "username",
+                    username: username
+                };
+                socket.send(JSON.stringify(message));
+                socket.send(JSON.stringify({ action: "getParticipants" }));
+            }
+        };
+
+
+        socket.onclose = function (event) {
+            window.location.href = 'index.html';
+        };
+
+        socket.onmessage = function (event) {
+            var data = JSON.parse(event.data);
+            var action = data.action;
+
+
+
+            switch (action) {
+                case "join":
+                    var messageId = data.id;
+                    var messageContent = data.message;
+                    var messageusername = data.username;
+                    console.log(messageusername);
+                    displayServerMessage(messageId, messageContent);
+                    addParticipantToList(messageusername,);
+                    break;
+                case "left":
+                    var messageId = data.id;
+                    var messageContent = data.message;
+                    var messageusername = data.username;
+                    if (messageContent !== "null left the group chat") {
+                        displayServerMessage(messageId, messageContent);
+                        removeParticipantFromList(messageusername)
+                    }
+                    break;
+                case "alert":
+                    var messageContent = data.message;
+                    alert(messageContent);
+                    console.log(messageContent);
+                    if (messageContent === "Username is already in use. Please choose a different username.") {
+
+                        window.location.href = 'index.html';
+                    }
+
+                    break;
+                case "message":
+                    var messageId = data.ID;
+                    var messageContent = data.message;
+                    var timestamp = data.timestamp;
+                    var username = data.username;
+                    console.log(messageContent, messageId, timestamp);
+                    displayMessage(messageId, username, messageContent, timestamp);
+                    break;
+
+                case "del":
+                    var messageId = data.id;
+                    var messageContent = data.message;
+                    console.log("DEL" + messageContent, messageId);
+                    deleteMessageFromContainer(messageId);
+                    displayServerMessage(messageId, messageContent);
+                    break;
+                case "update":
+                    var messageId = data.id;
+                    var messageContent = data.message;
+                    console.log("Update" + messageContent, messageId);
+                    updateMessageInContainer(messageId, messageContent);
+                    break;
+                case "participants":
+                    var Currentusername = getUrlParameter('username');
+                    var participants = data.participants;
+                    console.log(participants);
+                    updateParticipantsList(participants, Currentusername);
+                    break;
+                default:
+
+
+                    console.log("Received message: " + messageContent);
+                    break;
+            }
+        };
+        function updateParticipantsList(participants, currentUser) {
+            var participantsList = document.getElementById('participantsList');
+            participantsList.innerHTML = '';
+
+            participants.forEach(function (participant) {
+                var participantContainer = document.createElement('div');
+                participantContainer.classList.add('participant-container');
+
+                var participantName = document.createElement('span');
+                participantName.textContent = participant;
+                participantName.classList.add('participant-name');
+
+                if (participant === currentUser) {
+                    participantName.classList.add('bold');
+                    participantName.textContent = participant + " (You)";
+                    participantsList.insertBefore(participantContainer, participantsList.firstChild);
+                }
+
+                participantContainer.appendChild(participantName);
+                participantsList.appendChild(participantContainer);
+            });
+        }
+
+        function addParticipantToList(username, currentUser) {
+            var participantsList = document.getElementById('participantsList');
+            var participantContainer = document.createElement('div');
+            participantContainer.classList.add('participant-container');
+
+            var participantName = document.createElement('span');
+            participantName.textContent = username;
+            participantName.classList.add('participant-name');
+
+            if (username === currentUser) {
+                participantName.classList.add('bold');
+                participantName.textContent = username + " (You)";
+                participantsList.insertBefore(participantContainer, participantsList.firstChild);
+            }
+
+            participantContainer.appendChild(participantName);
+            participantsList.appendChild(participantContainer);
+        }
+
+        function removeParticipantFromList(username) {
+            var participantsList = document.getElementById('participantsList');
+            var participantContainers = participantsList.getElementsByClassName('participant-container');
+            for (var i = 0; i < participantContainers.length; i++) {
+                var participantName = participantContainers[i].querySelector('.participant-name');
+                if (participantName.textContent === username) {
+                    participantsList.removeChild(participantContainers[i]);
+                    break;
+                }
+            }
+        }
+
+
+
+
+
+
+
+        function showParticipants() {
+
+            document.getElementById('participantsModal').style.display = 'block';
+
+
+        }
+
+        function closeParticipantsModal() {
+
+            document.getElementById('participantsModal').style.display = 'none';
+        }
+
+
+
+
+
+        function displayMessage(messageId, username, message, timestamp) {
+            var messageContainer = document.createElement('div');
+            messageContainer.className = 'message-container';
+            messageContainer.setAttribute('data-id', messageId);
+
+            var metadataContainer = document.createElement('div');
+            metadataContainer.className = 'metadata-container';
+
+            var usernameElement = document.createElement('div');
+            usernameElement.textContent = username;
+            usernameElement.style.fontWeight = 'bold';
+            metadataContainer.appendChild(usernameElement);
+
+            var timestampElement = document.createElement('div');
+            timestampElement.textContent = formatTimestamp(timestamp);
+            timestampElement.className = 'message-timestamp';
+            metadataContainer.appendChild(timestampElement);
+
+            var messageContentContainer = document.createElement('div');
+            messageContentContainer.className = 'message-content-container';
+
+            var messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messageElement.className = 'message-content';
+            messageContentContainer.appendChild(messageElement);
+
+            messageContainer.appendChild(metadataContainer);
+            messageContainer.appendChild(messageContentContainer);
+
+            var actions = document.createElement('div');
+            actions.className = 'message-actions';
+
+            var editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.onclick = function () {
+                openEditModal(messageId, message);
+            };
+
+            var deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = function () {
+                deleteMessage(messageId);
+            };
+
+            actions.appendChild(editButton);
+            actions.appendChild(deleteButton);
+
+            messageContainer.appendChild(actions);
+
+            document.getElementById('chat').appendChild(messageContainer);
+            document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight;
+        }
+
+        function formatTimestamp(timestamp) {
+            var date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+
+
+
+        function displayServerMessage(messageId, message) {
+            var messageContainer = document.createElement('div');
+            messageContainer.className = 'message-container';
+            messageContainer.setAttribute('data-id', messageId);
+
+            var messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messageElement.className = 'message-text';
+            messageContainer.appendChild(messageElement);
+
+            document.getElementById('chat').appendChild(messageContainer);
+            document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight;
+        }
+
+
+        function openEditModal(messageId, messageContent) {
+            var modal = document.getElementById('editModal');
+            var editTextArea = document.getElementById('editMessage');
+            editMessageId = messageId;
+            editMessageContent = messageContent;
+            editTextArea.value = messageContent;
+            modal.style.display = 'block';
+        }
+
+        function updateMessage() {
+            var updatedMessage = document.getElementById('editMessage').value;
+            var username = getUrlParameter('username');
+            var messageId = editMessageId;
+            console.log("UPDATE" + updateMessage, messageId);
+            socket.send(JSON.stringify({ action: 'update', id: messageId, updatedMessage: updatedMessage, username: username }));
+            closeModal();
+        }
+
+        function searchMessages() {
+            var searchTerm = document.getElementById('searchInput').value.trim();
+            clearSearchResults();
+            var searchResults = getSearchResults(searchTerm);
+            displaySearchResults(searchResults);
+        }
+
+
+        function clearSearchResults() {
+            var searchResultsContainer = document.getElementById('searchResults');
+            searchResultsContainer.innerHTML = '';
+        }
+
+
+
+
+        function getSearchResults(searchTerm) {
+            var results = [];
+            var messages = document.querySelectorAll('.message-container');
+            messages.forEach(function (message) {
+                var messageContentElement = message.querySelector('.message-content');
+                if (messageContentElement) {
+                    var messageContent = messageContentElement.textContent;
+                    if (messageContent.includes(searchTerm)) {
+                        results.push(message);
+                    }
+                } else {
+                    console.error('Message content element not found in message container:', message);
+                }
+            });
+            return results;
+        }
+
+        function displaySearchResults(results) {
+            var searchResultsContainer = document.getElementById('searchResults');
+            searchResultsContainer.innerHTML = '';
+            results.forEach(function (result) {
+                searchResultsContainer.appendChild(result.cloneNode(true));
+            });
+            openSearchResultsModal();
+        }
+
+
+        function openSearchResultsModal() {
+            document.getElementById('searchResultsModal').style.display = 'block';
+        }
+
+        function closeSearchResultsModal() {
+            document.getElementById('searchResultsModal').style.display = 'none';
+        }
+
+
+
+
+        function deleteMessage(messageId) {
+            var username = getUrlParameter('username');
+            console.log(messageId, username);
+            socket.send(JSON.stringify({ action: 'del', id: messageId, username: username }));
+        }
+
+        function deleteMessageFromContainer(messageId) {
+
+            var messageContainer = document.querySelector('[data-id="' + messageId + '"]');
+            if (messageContainer) {
+
+                messageContainer.parentNode.removeChild(messageContainer);
+            } else {
+                console.log("Message with ID " + messageId + " not found.");
+            }
+
+
+        }
+        function updateMessageInContainer(messageId, newMessage) {
+
+            var messageContainer = document.querySelector('[data-id="' + messageId + '"]');
+            if (messageContainer) {
+
+                var messageElement = messageContainer.querySelector('.message-content');
+                if (messageElement) {
+
+                    messageElement.textContent = newMessage;
+                } else {
+                    console.log("Message content element not found in container with ID " + messageId);
+                }
+            } else {
+                console.log("Message container with ID " + messageId + " not found.");
+            }
+        }
+
+
+
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+        function sendMessage() {
+            var message = document.getElementById("message").value;
+            if (message.trim() !== "") {
+                var username = getUrlParameter('username');
+                socket.send(JSON.stringify({ action: 'add', message: message, username: username }));
+                document.getElementById("message").value = "";
+            }
+        }
+
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+    </script>
+</body>
+
+</html>
